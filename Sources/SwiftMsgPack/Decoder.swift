@@ -89,7 +89,7 @@ private struct StreamReader {
 	///
 	/// - Returns: value read
 	/// - Throws: throw an exception if data cannot be read or it's not available
-	mutating func read32Bit() throws -> UInt32 {
+	mutating func read32Bit() throws -> Int {
 		guard index + 4 <= data.count else {
 			throw MsgPackError.unexpectedData
 		}
@@ -98,7 +98,7 @@ private struct StreamReader {
 			value_int32 = (value_int32 << 8) + UInt32(data[Data.Index(idx)])
 		}
 		index += 4
-		return value_int32
+		return Int(value_int32)
 	}
 	
 	/// Read next 64 bytes and return the value (index is moved according to the task)
@@ -169,7 +169,7 @@ public extension Data {
 		// POSITIVE FIX INT
 		// positive fixint	0xxxxxxx	0x00 - 0x7f
 		case 0x00...0x7f:
-			return Int8(type)
+			return Int(type)
 		
 		// FIX DICTIONARY (< 16 ITEMS)
 		// fixmap	1000xxxx	0x80 - 0x8f
@@ -186,7 +186,8 @@ public extension Data {
 		// NEGATIVE FIX NUM
 		// negative fixint	111xxxxx	0xe0 - 0xff
 		case 0xe0...0xff:
-			return Int8( Int(type) - 256)
+            return Int(type) - 256
+			//return Int8( Int(type) - 256)
 		
 		// FIX STRING (< 16 CHARS)
 		// fixstr	101xxxxx	0xa0 - 0xbf
@@ -230,7 +231,7 @@ public extension Data {
 		// FLOAT 32 BIT
 		// float 32	11001010	0xca
 		case 0xca:
-			return Float(bitPattern: try stream.read32Bit())
+            return Float(bitPattern: try UInt32(stream.read32Bit()))
 		
 		// DOUBLE
 		// float 64	11001011	0xcb
@@ -275,7 +276,7 @@ public extension Data {
 		// INT 32 BIT
 		// int 32	11010010	0xd2
 		case 0xd2:
-			return try Int32(bitPattern: stream.read32Bit())
+			return try (bitPattern: stream.read32Bit())
 		
 		// INT 64 BIT
 		// int 64	11010011	0xd3
